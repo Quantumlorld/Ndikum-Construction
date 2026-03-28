@@ -1,15 +1,18 @@
 # Ndikum Construction Website
 
-A futuristic, high-performance website for Ndikum Construction - a data-driven construction company.
+A premium hybrid industrial + intelligent system interface for Ndikum Construction - a data-driven construction company.
 
 ## 🚀 Features
 
-- **Hero Section** with video background and real-time metrics
+- **Hero Section** with strong identity and system-focused messaging
+- **Premium Auth System** with system access panel (Login/Register)
+- **Intelligence System Section** showcasing AI-powered production
 - **Metrics System** with animated count-up cards
-- **Dashboard Section** with video overlay and floating UI elements
+- **Dashboard Section** with live production data
 - **System Flow** visualization of production process
-- **Production Capacity** showcase
-- **Pricing Calculator** with live cost calculations
+- **Production Capacity** showcase with machine status
+- **Transparent Pricing Calculator** with cost breakdown
+- **Smart Design Lab** for custom designs
 - **Contact Section** with form and contact information
 
 ## 🛠️ Tech Stack
@@ -22,14 +25,14 @@ A futuristic, high-performance website for Ndikum Construction - a data-driven c
 
 ## 🎨 Design System
 
-- **Theme**: Dark Futuristic
+- **Theme**: Premium Hybrid Industrial + Intelligent System
 - **Colors**:
-  - Background: #0B0F19
-  - Primary: #00D1FF (electric blue)
-  - Accent: #F5B942 (gold)
-  - Text: white / light gray
+  - Background: Black (#000000) / White (#FFFFFF)
+  - Primary: Blue (#2563EB)
+  - Accent: Green (#16A34A)
+  - Text: White / Black
 
-- **Style**: Glassmorphism cards, soft glow effects, smooth transitions
+- **Style**: Clean white sections, black contrast sections, smooth animations
 
 ## 📦 Installation
 
@@ -61,6 +64,10 @@ src/
 │   ├── page.tsx           # Homepage
 │   └── globals.css        # Global styles
 ├── components/
+│   ├── auth/              # Authentication components
+│   │   └── AuthModal.tsx  # Login/Register modal
+│   ├── layout/            # Layout components
+│   │   └── Navigation.tsx # Main navigation
 │   ├── ui/                # Reusable UI components
 │   │   ├── Button.tsx
 │   │   ├── GlassCard.tsx
@@ -68,11 +75,13 @@ src/
 │   │   └── VideoBackground.tsx
 │   └── sections/          # Page sections
 │       ├── Hero.tsx
+│       ├── IntelligenceSystem.tsx
 │       ├── MetricsSystem.tsx
 │       ├── Dashboard.tsx
 │       ├── SystemFlow.tsx
 │       ├── ProductionCapacity.tsx
 │       ├── PricingCalculator.tsx
+│       ├── SmartDesignLab.tsx
 │       └── Contact.tsx
 ├── lib/
 │   └── utils.ts           # Utility functions
@@ -80,21 +89,22 @@ src/
     └── index.ts           # TypeScript types
 ```
 
-## 🎥 Videos
+## 🎥 Videos & Images
 
-Place video files in `/public/videos/`:
-
-- `hero-bg.mp4` - Hero section background
-- `factory-operations.mp4` - Dashboard section
-- `block-production.mp4` - Production capacity section
+Place media files in `/public/`:
+- `videos/hero-bg.mp4` - Hero section background
+- `images/factory-machine.jpg` - Production machine images
+- `images/block-machine.jpg` - Block production images
 
 ## 🎯 Key Features
 
+- **System Interface**: High-end industrial + intelligent system feel
+- **Premium Auth**: System access panel with professional design
 - **Responsive Design**: Mobile-first approach
 - **Performance Optimized**: Lazy loading, optimized animations
 - **Interactive Elements**: Hover effects, smooth transitions
-- **Real-time Calculations**: Live pricing calculator
-- **Modern UI**: Glassmorphism, gradient effects, animations
+- **Real-time Calculations**: Live pricing calculator with cost breakdown
+- **Modern UI**: Clean design with strategic color contrast
 
 ## 📱 Mobile Support
 
