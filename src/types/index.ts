@@ -30,3 +30,44 @@ export interface ContactForm {
   phone: string
   message: string
 }
+
+// State Management Types
+export interface User {
+  id: string
+  name: string
+  email: string
+  company?: string
+}
+
+export interface ProductionState {
+  isRunning: boolean
+  outputRate: number
+  efficiency: number
+  activeMachines: number
+  totalMachines: number
+  productionTime: number
+  lastUpdate: Date
+}
+
+export interface Notification {
+  id: string
+  type: 'success' | 'warning' | 'error' | 'info'
+  message: string
+  timestamp: Date
+}
+
+export interface AppState {
+  user: User | null
+  isAuthenticated: boolean
+  production: ProductionState
+  notifications: Notification[]
+}
+
+export type AppAction =
+  | { type: 'LOGIN_SUCCESS'; payload: User }
+  | { type: 'LOGOUT' }
+  | { type: 'START_PRODUCTION' }
+  | { type: 'PAUSE_PRODUCTION' }
+  | { type: 'UPDATE_PRODUCTION'; payload: Partial<ProductionState> }
+  | { type: 'ADD_NOTIFICATION'; payload: Omit<Notification, 'id' | 'timestamp'> }
+  | { type: 'REMOVE_NOTIFICATION'; payload: string }

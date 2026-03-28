@@ -3,16 +3,20 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { X, User, Mail, Lock, Building2, Eye, EyeOff } from 'lucide-react'
+import { LoadingButton } from '@/components/ui/LoadingSpinner'
+import { User as UserType } from '@/types'
 
 interface AuthModalProps {
   isOpen: boolean
   onClose: () => void
   mode: 'login' | 'register'
   onModeChange: (mode: 'login' | 'register') => void
+  onLogin?: (userData: UserType) => void
 }
 
-export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, mode, onModeChange, onLogin }: AuthModalProps) {
   const [showPassword, setShowPassword] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
   const [formData, setFormData] = React.useState({
     email: '',
     password: '',
@@ -20,10 +24,39 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
     company: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('System access initiated:', formData)
-    // Handle authentication logic here
+    setIsLoading(true)
+
+    // Simulate authentication delay
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    try {
+      // Simulate successful authentication
+      if (onLogin) {
+        const userData: UserType = {
+          id: Date.now().toString(),
+          name: formData.name || 'System User',
+          email: formData.email,
+          company: formData.company
+        }
+        onLogin(userData)
+      }
+      
+      // Reset form
+      setFormData({
+        email: '',
+        password: '',
+        name: '',
+        company: ''
+      })
+      
+      onClose()
+    } catch (error) {
+      console.error('Authentication failed:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (!isOpen) return null
@@ -61,6 +94,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
             <button
               onClick={onClose}
               className="text-white/80 hover:text-white transition-colors"
+              disabled={isLoading}
             >
               <X className="w-6 h-6" />
             </button>
@@ -76,6 +110,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                   : 'text-white/80 hover:text-white'
               }`}
               layoutId="authModeToggle"
+              disabled={isLoading}
             >
               Login
             </motion.button>
@@ -86,6 +121,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                   ? 'bg-white text-blue-600' 
                   : 'text-white/80 hover:text-white'
               }`}
+              disabled={isLoading}
             >
               Register
             </motion.button>
@@ -109,6 +145,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                     className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                     placeholder="John Doe"
                     required={mode === 'register'}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -125,6 +162,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                     className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                     placeholder="Ndikum Construction Ltd."
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -144,6 +182,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="john@ndikum.com"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -161,6 +200,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                 className="w-full pl-10 pr-12 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                 placeholder="•••••••"
                 required
+                disabled={isLoading}
               />
               <motion.button
                 type="button"
@@ -168,6 +208,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-all duration-200"
+                disabled={isLoading}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </motion.button>
@@ -176,7 +217,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
 
           <div className="flex items-center justify-between">
             <label className="flex items-center">
-              <input type="checkbox" className="mr-2" />
+              <input type="checkbox" className="mr-2" disabled={isLoading} />
               <span className="text-sm text-gray-600">Remember system access</span>
             </label>
             {mode === 'login' && (
@@ -186,14 +227,14 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
             )}
           </div>
 
-          <motion.button
+          <LoadingButton
             type="submit"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            isLoading={isLoading}
+            disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg"
           >
             {mode === 'login' ? 'Access System →' : 'Create Account →'}
-          </motion.button>
+          </LoadingButton>
 
           {mode === 'login' && (
             <div className="text-center pt-4 border-t border-gray-200">
@@ -205,6 +246,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onModeChange('register')}
                   className="text-blue-600 hover:text-blue-700 font-semibold"
+                  disabled={isLoading}
                 >
                   Initialize Account
                 </motion.button>
@@ -222,6 +264,7 @@ export function AuthModal({ isOpen, onClose, mode, onModeChange }: AuthModalProp
                   whileTap={{ scale: 0.95 }}
                   onClick={() => onModeChange('login')}
                   className="text-blue-600 hover:text-blue-700 font-semibold"
+                  disabled={isLoading}
                 >
                   Continue Setup
                 </motion.button>

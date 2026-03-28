@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
 import { formatCurrency } from '@/lib/utils'
 import { Calculator, Clock } from 'lucide-react'
+import { useAppState } from '@/store/ProductionState'
 
 const blockTypes = [
-  { id: 'standard', name: 'Standard Block', price: 350, time: 24 },
-  { id: 'premium', name: 'Premium Block', price: 420, time: 48 },
-  { id: 'heavy-duty', name: 'Heavy-Duty Block', price: 550, time: 72 }
+  { id: 'standard', name: 'Standard Block', price: 350, time: 24, outputMultiplier: 1.0 },
+  { id: 'premium', name: 'Premium Block', price: 420, time: 48, outputMultiplier: 0.8 },
+  { id: 'heavy-duty', name: 'Heavy-Duty Block', price: 550, time: 72, outputMultiplier: 0.6 }
 ]
 
 const costBreakdown = {
@@ -23,10 +24,21 @@ export function PricingCalculator() {
   const [quantity, setQuantity] = React.useState(1000)
   const [blockType, setBlockType] = React.useState('standard')
   const [isCalculating, setIsCalculating] = React.useState(false)
+  
+  const { state, dispatch } = useAppState()
 
   const currentType = blockTypes.find(type => type.id === blockType) || blockTypes[0]
   const totalPrice = quantity * currentType.price
   const productionTime = Math.ceil(quantity / 5000) * currentType.time
+  
+  // Calculate production impact
+  const machineLoad = Math.min((quantity / 10000) * 100, 100)
+  const estimatedOutputRate = state.production.isRunning 
+    ? Math.floor(state.production.outputRate * currentType.outputMultiplier)
+    : 0
+  const actualProductionTime = estimatedOutputRate > 0 
+    ? Math.ceil(quantity / estimatedOutputRate)
+    : productionTime
 
   // Calculate cost breakdown
   const materialCost = totalPrice * costBreakdown.material
@@ -39,6 +51,30 @@ export function PricingCalculator() {
     const timer = setTimeout(() => setIsCalculating(false), 300)
     return () => clearTimeout(timer)
   }, [quantity, blockType])
+
+  React.useEffect(() => {
+    // Update production state based on pricing changes
+    if (state.isAuthenticated) {
+      dispatch({
+        type: 'UPDATE_PRODUCTION',
+        payload: {
+          outputRate: estimatedOutputRate,
+          efficiency: Math.max(85, 95 - (machineLoad * 0.1))
+        }
+      })
+
+      // Show notification for significant changes
+      if (quantity > 5000) {
+        dispatch({
+          type: 'ADD_NOTIFICATION',
+          payload: {
+            type: 'info',
+            message: `Large order detected: ${quantity.toLocaleString()} blocks will impact production schedule`
+          }
+        })
+      }
+    }
+  }, [quantity, blockType, state.isAuthenticated])
 
   return (
     <section id="pricing" className="section-padding bg-gray-50">
@@ -55,7 +91,7 @@ export function PricingCalculator() {
             <span className="text-gray-900">Calculator</span>
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
-            Transparent cost breakdown with real-time calculations powered by intelligent systems
+            Transparent cost breakdown with real-time system integration
           </p>
         </motion.div>
 
@@ -128,6 +164,27 @@ export function PricingCalculator() {
                 </div>
               </div>
 
+              {/* Production Impact */}
+              {state.isAuthenticated && (
+                <div className="bg-blue-50 rounded-xl p-6 border border-blue-200 mb-8">
+                  <h4 className="text-lg font-bold text-blue-900 mb-4">Production Impact</h4>
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Machine Load:</span>
+                      <span className="font-bold text-blue-900">{machineLoad.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Output Rate:</span>
+                      <span className="font-bold text-blue-900">{estimatedOutputRate.toLocaleString()}/hr</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-blue-700">Est. Time:</span>
+                      <span className="font-bold text-blue-900">{actualProductionTime} hrs</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Production Time */}
               <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                 <div className="flex items-center gap-3 mb-4">
@@ -135,16 +192,16 @@ export function PricingCalculator() {
                   <span className="text-lg font-bold text-gray-900">Production Time</span>
                 </div>
                 <motion.div
-                  key={productionTime}
+                  key={actualProductionTime}
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5, type: "spring" }}
                 >
                   <p className="text-3xl font-black text-blue-600 mb-2">
-                    {productionTime} hours
+                    {actualProductionTime} hours
                   </p>
                   <p className="text-lg text-gray-600">
-                    Approx. {Math.ceil(productionTime / 24)} days
+                    Approx. {Math.ceil(actualProductionTime / 24)} days
                   </p>
                 </motion.div>
               </div>

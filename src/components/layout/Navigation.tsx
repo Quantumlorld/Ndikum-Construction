@@ -2,19 +2,22 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Menu, X, User, LogIn } from 'lucide-react'
+import { Menu, X, User, LogIn, LogOut, Monitor } from 'lucide-react'
 import { AuthModal } from '@/components/auth/AuthModal'
+import { useAppState } from '@/store/ProductionState'
 
 export function Navigation() {
   const [isOpen, setIsOpen] = React.useState(false)
   const [activeSection, setActiveSection] = React.useState('hero')
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false)
   const [authMode, setAuthMode] = React.useState<'login' | 'register'>('login')
+  
+  const { state, dispatch } = useAppState()
 
   const navItems = [
     { name: 'Home', href: '#hero' },
     { name: 'Metrics', href: '#metrics' },
-    { name: 'Dashboard', href: '#dashboard' },
+    ...(state.isAuthenticated ? [{ name: 'Control Center', href: '#dashboard' }] : []),
     { name: 'System Flow', href: '#system-flow' },
     { name: 'Production', href: '#production' },
     { name: 'Pricing', href: '#pricing' },
@@ -41,7 +44,22 @@ export function Navigation() {
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [activeSection])
+  }, [activeSection, navItems])
+
+  const handleLogin = (userData: { name: string; email: string; company?: string }) => {
+    dispatch({ 
+      type: 'LOGIN_SUCCESS', 
+      payload: { 
+        id: Date.now().toString(), 
+        ...userData 
+      } 
+    })
+    setIsAuthModalOpen(false)
+  }
+
+  const handleLogout = () => {
+    dispatch({ type: 'LOGOUT' })
+  }
 
   return (
     <>
@@ -87,32 +105,66 @@ export function Navigation() {
               ))}
             </div>
 
-            {/* Auth Buttons */}
+            {/* Auth/User Section */}
             <div className="hidden md:flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setAuthMode('login')
-                  setIsAuthModalOpen(true)
-                }}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                Access System
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setAuthMode('register')
-                  setIsAuthModalOpen(true)
-                }}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg"
-              >
-                <User className="w-4 h-4" />
-                Initialize Account
-              </motion.button>
+              {!state.isAuthenticated ? (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setAuthMode('login')
+                      setIsAuthModalOpen(true)
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Access System
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)' }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setAuthMode('register')
+                      setIsAuthModalOpen(true)
+                    }}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-all duration-300 shadow-lg"
+                  >
+                    <User className="w-4 h-4" />
+                    Initialize Account
+                  </motion.button>
+                </>
+              ) : (
+                <>
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    className="flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg"
+                  >
+                    <User className="w-4 h-4 text-gray-600" />
+                    <span className="text-sm font-bold text-gray-700">
+                      {state.user?.name}
+                    </span>
+                  </motion.div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
+                  >
+                    <Monitor className="w-4 h-4" />
+                    Dashboard
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05, backgroundColor: '#dc2626' }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold transition-all duration-300"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </motion.button>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -150,28 +202,61 @@ export function Navigation() {
                   </a>
                 ))}
                 <div className="pt-4 border-t border-gray-200 space-y-3">
-                  <button
-                    onClick={() => {
-                      setAuthMode('login')
-                      setIsAuthModalOpen(true)
-                      setIsOpen(false)
-                    }}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    Access System
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAuthMode('register')
-                      setIsAuthModalOpen(true)
-                      setIsOpen(false)
-                    }}
-                    className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold transition-all duration-300"
-                  >
-                    <User className="w-4 h-4" />
-                    Initialize Account
-                  </button>
+                  {!state.isAuthenticated ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setAuthMode('login')
+                          setIsAuthModalOpen(true)
+                          setIsOpen(false)
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
+                      >
+                        <LogIn className="w-4 h-4" />
+                        Access System
+                      </button>
+                      <button
+                        onClick={() => {
+                          setAuthMode('register')
+                          setIsAuthModalOpen(true)
+                          setIsOpen(false)
+                        }}
+                        className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg font-bold transition-all duration-300"
+                      >
+                        <User className="w-4 h-4" />
+                        Initialize Account
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-3 px-3 py-2 bg-gray-100 rounded-lg">
+                        <User className="w-4 h-4 text-gray-600" />
+                        <span className="text-sm font-bold text-gray-700">
+                          {state.user?.name}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' })
+                          setIsOpen(false)
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-gray-700 hover:text-blue-600 font-bold transition-colors"
+                      >
+                        <Monitor className="w-4 h-4" />
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleLogout()
+                          setIsOpen(false)
+                        }}
+                        className="w-full flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-bold transition-all duration-300"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -185,6 +270,7 @@ export function Navigation() {
         onClose={() => setIsAuthModalOpen(false)}
         mode={authMode}
         onModeChange={setAuthMode}
+        onLogin={handleLogin}
       />
     </>
   )
